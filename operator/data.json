@@ -1,0 +1,106 @@
+{
+    "variable": {
+        "args": [
+            {
+                "name": "Str",
+                "alias": "",
+                "format": "(%v)",
+                "num": 1
+            },
+            {
+                "name": "Not",
+                "alias": "",
+                "format": "(NOT %v)",
+                "num": 1
+            },
+            {
+                "name": "Equal",
+                "alias": "Eq",
+                "format": "(%v = %v)",
+                "num": 2
+            },
+            {
+                "name": "NotEqual",
+                "alias": "Ne",
+                "format": "(%v != %v)",
+                "num": 2
+            },
+            {
+                "name": "LessThan",
+                "alias": "Lt",
+                "format": "(%v < %v)",
+                "num": 2
+            },
+            {
+                "name": "GreaterThan",
+                "alias": "Gt",
+                "format": "(%v > %v)",
+                "num": 2
+            },
+            {
+                "name": "GreaterEqual",
+                "alias": "Ge",
+                "format": "(%v >= %v)",
+                "num": 2
+            },
+            {
+                "name": "LessEqual",
+                "alias": "Le",
+                "format": "(%v <= %v)",
+                "num": 2
+            },
+            {
+                "name": "In",
+                "alias": "",
+                "format": "(%v IN %v)",
+                "num": 2
+            },
+            {
+                "name": "NotIn",
+                "alias": "Ni",
+                "format": "(%v NOT IN %v)",
+                "num": 2
+            },
+            {
+                "name": "Like",
+                "alias": "",
+                "format": "(%v LIKE %v)",
+                "num": 2
+            },
+            {
+                "name": "Between",
+                "alias": "",
+                "format": "(%v BETWEEN %v AND %v)",
+                "num": 3
+            }
+        ]
+    },
+    "files": [
+        {
+            "package": "op",
+            "import": [],
+            "output": "./func.go",
+            "body": [
+                {
+                    "template": "./template/func.tpl",
+                    "args": [
+                        "args"
+                    ]
+                }
+            ]
+        },
+        {
+            "package": "op",
+            "import": [],
+            "output": "./type.go",
+            "body": [
+                {
+                    "template": "./template/type.tpl",
+                    "args": [
+                        "args"
+                    ]
+                }
+            ]
+        }
+    ]
+}
