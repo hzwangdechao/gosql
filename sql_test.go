@@ -1,6 +1,7 @@
 package sql
 
 import (
+	"github.com/OhYee/gosql/operator"
 	"testing"
 )
 
@@ -37,6 +38,21 @@ func Test_main(t *testing.T) {
 			name:  "select * from",
 			query: user.SQL(),
 			sql:   "SELECT * FROM `test`.`user`;",
+		},
+		{
+			name:  "select from where",
+			query: user.SQL().Select(user.Username, user.Realname).Where(op.Eq(user.Username, "OhYee")),
+			sql:   "SELECT `test`.`user`.`username`, `test`.`user`.`realname` FROM `test`.`user` WHERE (`test`.`user`.`username` = 'OhYee');",
+		},
+		{
+			name:  "column as",
+			query: user.SQL().Select(user.Username, user.Realname.As("truename")).Where(op.Eq(user.Username, "OhYee")),
+			sql:   "SELECT `test`.`user`.`username`, `test`.`user`.`realname` AS `truename` FROM `test`.`user` WHERE (`test`.`user`.`username` = 'OhYee');",
+		},
+		{
+			name:  "select in",
+			query: user.SQL().Select(user.Username, user.Realname).Where(op.In(user.Username, user.SQL().Select(user.Username).Where(op.Ne(user.Realname, "")))),
+			sql:   "SELECT `test`.`user`.`username`, `test`.`user`.`realname` FROM `test`.`user` WHERE (`test`.`user`.`username` IN (SELECT `test`.`user`.`username` FROM `test`.`user` WHERE (`test`.`user`.`realname` != '')));",
 		},
 	}
 
