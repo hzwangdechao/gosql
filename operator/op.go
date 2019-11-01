@@ -15,6 +15,9 @@ type Operator struct {
 	format   string
 }
 type any = interface{}
+type stringlize interface {
+	ToString() string
+}
 
 // String return the string that can be identify by database
 func (op *Operator) String() string {
@@ -35,13 +38,18 @@ func toSQLString(v any) (res string) {
 	case reflect.String:
 		s := v.(string)
 		sl := len(s)
-		if (s[0] == '\'' && s[sl-1] == '\'') ||
-			(s[0] == '"' && s[sl-1] == '"') ||
-			(s[0] == '`' && s[sl-1] == '`') {
-			res = fmt.Sprintf("%s", v)
-		} else {
+		if sl < 2 {
 			res = fmt.Sprintf("'%s'", v)
+		} else {
+			if (s[0] == '\'' && s[sl-1] == '\'') ||
+				(s[0] == '"' && s[sl-1] == '"') ||
+				(s[0] == '`' && s[sl-1] == '`') {
+				res = fmt.Sprintf("%s", v)
+			} else {
+				res = fmt.Sprintf("'%s'", v)
+			}
 		}
+
 	case reflect.Slice:
 		s := reflect.ValueOf(v)
 		ss := make([]string, s.Len())
@@ -51,7 +59,12 @@ func toSQLString(v any) (res string) {
 		}
 		res = fmt.Sprintf("(%s)", strings.Join(ss, ", "))
 	default:
-		res = fmt.Sprintf("%v", v)
+		switch v.(type) {
+		case stringlize:
+			res = v.(stringlize).ToString()
+		default:
+			res = fmt.Sprintf("%v", v)
+		}
 	}
 	return
 }
