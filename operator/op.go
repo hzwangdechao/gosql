@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-//go:generate gcg ./data.json
+//go:generate gcg ./template/data.json
 
 // Operator is commonly used SQL operators
 type Operator struct {

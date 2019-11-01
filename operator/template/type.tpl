@@ -4,13 +4,15 @@ type OperatorType uint8
 // operator constant
 const (
 	_ OperatorType = iota
-    {{range $operator := .}}Operator{{$operator.name}}
+    {{range $operator := . -}}
+    Operator{{$operator.name}}
     {{end}}
 )
 
 var operatorName = [...]string{
     "Unknown", 
-    {{range $operator := .}}"{{$operator.name}}",
+    {{range $operator := . -}}
+    "{{$operator.name}}", 
     {{end}}
 }
 

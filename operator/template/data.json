@@ -79,10 +79,10 @@
         {
             "package": "op",
             "import": [],
-            "output": "./func.go",
+            "output": "../func.go",
             "body": [
                 {
-                    "template": "./template/func.tpl",
+                    "template": "./func.tpl",
                     "args": [
                         "args"
                     ]
@@ -92,10 +92,10 @@
         {
             "package": "op",
             "import": [],
-            "output": "./type.go",
+            "output": "../type.go",
             "body": [
                 {
-                    "template": "./template/type.tpl",
+                    "template": "./type.tpl",
                     "args": [
                         "args"
                     ]
