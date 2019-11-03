@@ -19,8 +19,8 @@ func NewUser() *User {
 	return &User{
 		// SQL:      NewSQL().From(tb),
 		Table:    tb,
-		Username: sql.NewColumn(tb, "username", "", sql.ColumnTypeUnknow),
-		Realname: sql.NewColumn(tb, "realname", "", sql.ColumnTypeUnknow),
+		Username: sql.NewColumn(tb, "username", "", sql.ColumnTypeUnknown),
+		Realname: sql.NewColumn(tb, "realname", "", sql.ColumnTypeUnknown),
 	}
 }
 
