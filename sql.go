@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+type any = interface{}
+
 // SQL
 type SQL struct {
 	columns    []*Column
