@@ -6,15 +6,15 @@ type Type uint8
 // Database value type list
 const (
 	ColumnTypeFunction Type = iota
-	ColumnTypeUnknow
+	ColumnTypeUnknown
 )
 
-var typeName = [...]string{"Function", "Unknow"}
+var typeName = [...]string{"Function", "Unknown"}
 
 // String name of database value type
 func (t Type) String() string {
 	if int(t) > len(typeName) {
-		return "Unknow"
+		return "Unknown"
 	}
 	return typeName[t]
 }
