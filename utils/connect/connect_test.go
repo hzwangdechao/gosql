@@ -66,7 +66,7 @@ func TestConnect_Query(t *testing.T) {
 		wantErr    bool
 	}{
 		{
-			name:       "",
+			name:       "test table",
 			args:       args{"SELECT * FROM `test`.`test`;", []any{}},
 			wantResult: Results{{"name": []byte("test")}},
 			wantErr:    false,
