@@ -1,13 +1,45 @@
 package connect
 
 import (
-	"reflect"
+	"github.com/OhYee/gosql"
+	"github.com/OhYee/goutils"
+	"os"
 	"testing"
-
-	_ "github.com/go-sql-driver/mysql"
+	"time"
 )
 
 var validDatabase = DataSourceName{"ohyee", "123456", "127.0.0.1", 3306}
+var isLocal = func() bool {
+	hostname, _ := os.Hostname()
+	return hostname == "OhYee-wsl"
+}()
+
+type User struct {
+	// *SQL
+	*sql.Table
+	Username *sql.Column
+	Realname *sql.Column
+}
+
+func NewUser(alias ...string) *User {
+	const size = 3
+	as := make([]string, size)
+	for i := 0; i < size; i++ {
+		if len(alias) >= i+1 {
+			as[i] = alias[i]
+		} else {
+			as[i] = ""
+		}
+	}
+
+	tb := sql.NewTable("test", "users", as[0])
+	return &User{
+		// SQL:      NewSQL().From(tb),
+		Table:    tb,
+		Username: sql.NewColumn(tb, "username", as[1], sql.ColumnTypeUnknown),
+		Realname: sql.NewColumn(tb, "realname", as[2], sql.ColumnTypeUnknown),
+	}
+}
 
 func TestNewConnectionAndClose(t *testing.T) {
 	type args struct {
@@ -22,9 +54,9 @@ func TestNewConnectionAndClose(t *testing.T) {
 		{
 			name:           "Connect to a exist database",
 			dsn:            &validDatabase,
-			isClose:        false,
+			isClose:        !isLocal,
 			wantErr:        false,
-			wantCloseError: false,
+			wantCloseError: !isLocal,
 		},
 		{
 			name:           "Connect to a error database",
@@ -51,10 +83,17 @@ func TestNewConnectionAndClose(t *testing.T) {
 }
 
 func TestConnect_Query(t *testing.T) {
+	if !isLocal {
+		return
+	}
 	conn, err := NewConnection(&validDatabase)
 	if err != nil {
 		t.Fail()
 	}
+	defer conn.Close()
+	user := NewUser()
+	timeZone, err := time.LoadLocation("UTC")
+
 	type args struct {
 		sqlStr string
 		args   []any
@@ -68,8 +107,26 @@ func TestConnect_Query(t *testing.T) {
 		{
 			name:       "test table",
 			args:       args{"SELECT * FROM `test`.`test`;", []any{}},
-			wantResult: Results{{"name": []byte("test")}},
-			wantErr:    false,
+			wantResult: Results{{"name": "test"}},
+			wantErr:    !isLocal,
+		},
+		{
+			name: "test common types",
+			args: args{user.SQL().Query(), []any{}},
+			wantResult: Results{{
+				"username": "OhYee",
+				"fullname": "名字",
+				"password": "123123",
+				"bigint":   int64(1111111111111111),
+				"longtext": "qwe",
+				"bit":      byte(1),
+				"date":     time.Date(2019, 01, 01, 0, 0, 0, 0, timeZone),
+				"datetime": time.Date(2019, 01, 01, 10, 10, 10, 0, timeZone),
+				"decimal":  6666.666667,
+				"double":   1.2345678910111213,
+				"float":    1.23457,
+			}},
+			wantErr: !isLocal,
 		},
 	}
 	for _, tt := range tests {
@@ -79,7 +136,7 @@ func TestConnect_Query(t *testing.T) {
 				t.Errorf("Connect.Query() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(gotResult, tt.wantResult) {
+			if !goutils.Equal(gotResult, tt.wantResult) {
 				t.Errorf("Connect.Query() = %v, want %v", gotResult, tt.wantResult)
 			}
 		})

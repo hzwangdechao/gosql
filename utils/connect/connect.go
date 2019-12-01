@@ -3,8 +3,12 @@ package connect
 import (
 	"database/sql"
 	"fmt"
-	// "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
+	"strconv"
+	// "math"
+	"reflect"
 	"strings"
+	"time"
 )
 
 type any = interface{}
@@ -44,7 +48,7 @@ type Connect struct {
 }
 
 func newConnect(db *sql.DB) *Connect {
-	return &Connect{db, db.Ping() != nil}
+	return &Connect{db, db != nil && db.Ping() != nil}
 }
 
 // NewConnection connect to a exist database
@@ -94,10 +98,44 @@ func (conn *Connect) Query(sqlStr string, args ...any) (result Results, err erro
 			return
 		}
 		for idx, value := range tmp {
-			col[types[idx].Name()] = value
+			transferType(col, types[idx], value)
 		}
 		result = append(result, col)
 	}
 	rows.Close()
 	return
+}
+
+func transferType(m Result, t *sql.ColumnType, value any) {
+	name := t.Name()
+	switch t.DatabaseTypeName() {
+	case "VARCHAR", "TEXT":
+		m[name] = string(value.([]byte))
+	case "INT":
+		n, _ := strconv.ParseInt(string(value.([]byte)), 10, 32)
+		m[name] = int32(n)
+	case "BIGINT":
+		n, _ := strconv.ParseInt(string(value.([]byte)), 10, 64)
+		m[name] = int64(n)
+	case "SMALLINT":
+		n, _ := strconv.ParseInt(string(value.([]byte)), 10, 16)
+		m[name] = int16(n)
+	case "TINYINT":
+		n, _ := strconv.ParseInt(string(value.([]byte)), 10, 8)
+		m[name] = int8(n)
+	case "BIT":
+		m[name] = value.([]byte)[0]
+	case "DATE":
+		m[name], _ = time.Parse("2006-01-02", string(value.([]byte)))
+	case "DATETIME":
+		m[name], _ = time.Parse("2006-01-02 15:04:05", string(value.([]byte)))
+	case "DOUBLE", "DECIMAL":
+		m[name], _ = strconv.ParseFloat(string(value.([]byte)), 64)
+	case "FLOAT":
+		f64, _ := strconv.ParseFloat(string(value.([]byte)), 32)
+		m[name] = float32(f64)
+	default:
+		fmt.Println(t.DatabaseTypeName(), reflect.TypeOf(value).Name(), value)
+		m[name] = value
+	}
 }
