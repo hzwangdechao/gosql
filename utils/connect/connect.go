@@ -108,6 +108,18 @@ func (conn *Connect) Query(sqlStr string, args ...any) (result Results, err erro
 
 func transferType(m Result, t *sql.ColumnType, value any) {
 	name := t.Name()
+
+	switch value.(type) {
+	case int, uint16, uint32, uint64, int8, int16, int32, int64, string, byte:
+		m[name] = value
+		return
+	default:
+		if value == nil {
+			m[name] = value
+			return
+		}
+	}
+
 	switch t.DatabaseTypeName() {
 	case "VARCHAR", "TEXT":
 		m[name] = string(value.([]byte))
