@@ -16,6 +16,7 @@ type SQL struct {
 	conditions []*op.Operator
 	groups     []*Column
 	orders     []*OrderColumn
+	limit      string
 }
 
 func NewSQL() *SQL {
@@ -62,6 +63,11 @@ func (sql *SQL) OrderBy(columns ...*OrderColumn) *SQL {
 
 }
 
+func (sql *SQL) Limit(limit, offset int) *SQL {
+	sql.limit = fmt.Sprintf(" LIMIT %d OFFSET %d", limit, offset)
+	return sql
+}
+
 // Query return the string of the sql query (for send to server, will add semicolon)
 func (sql *SQL) Query() string {
 	return sql.toString() + ";"
@@ -75,6 +81,7 @@ func (sql *SQL) toString() string {
 		sql.getWherePart(),
 		sql.getGroupPart(),
 		sql.getOrderPart(),
+		sql.getLimitPart(),
 	}
 
 	strSlice = fp.FilterString(func(s string) bool {
@@ -127,6 +134,11 @@ func (sql *SQL) getOrderPart() string {
 		return ""
 	}
 	return fmt.Sprintf("ORDER BY %s", strings.Join(orders, ", "))
+
+}
+
+func (sql *SQL) getLimitPart() string {
+	return sql.limit
 
 }
 
