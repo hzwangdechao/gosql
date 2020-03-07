@@ -17,6 +17,7 @@ type SQL struct {
 	groups     []*Column
 	orders     []*OrderColumn
 	limit      string
+	joins      []string
 }
 
 func NewSQL() *SQL {
@@ -48,6 +49,31 @@ func (sql *SQL) Where(conditions ...*op.Operator) *SQL {
 	return sql
 }
 
+func (sql *SQL) LeftJoin(prefixSql *SQL, conditions ...*op.Operator) *SQL {
+	wherePart := make([]string, 0)
+	for _, op := range conditions {
+		wherePart = append(wherePart, op.String())
+	}
+	if len(wherePart) != 0 {
+		sql.joins = append(sql.joins, fmt.Sprintf(" LEFT JOIN %s ON %s", prefixSql.toString(), strings.Join(wherePart, " and ")))
+
+	}
+	return sql
+}
+
+func (sql *SQL) InnerJoin(prefixSql *SQL, conditions ...*op.Operator) *SQL {
+	wherePart := make([]string, 0)
+	for _, op := range conditions {
+		wherePart = append(wherePart, op.String())
+	}
+	if len(wherePart) != 0 {
+		sql.joins = append(sql.joins, fmt.Sprintf(" INNER JOIN %s ON %s", prefixSql.toString(), strings.Join(wherePart, " and ")))
+
+	}
+	return sql
+}
+
+
 func (sql *SQL) GroupBy(columns ...*Column) *SQL {
 	for _, column := range columns {
 		sql.groups = append(sql.columns, column)
@@ -78,6 +104,7 @@ func (sql *SQL) toString() string {
 	strSlice := []string{
 		sql.getSelectPart(),
 		sql.getFromPart(),
+		sql.getJoinPart(),
 		sql.getWherePart(),
 		sql.getGroupPart(),
 		sql.getOrderPart(),
@@ -161,6 +188,17 @@ func (sql *SQL) getWherePart() string {
 	return fmt.Sprintf("WHERE %s", strings.Join(conditions, " and "))
 }
 
+func (sql *SQL) getJoinPart() string {
+	if len(sql.joins) == 0 {
+		return ""
+	}
+	joins := make([]string, 0)
+	for _, join := range sql.joins {
+		joins = append(joins, join)
+	}
+	return strings.Join(joins, " ")
+}
+
 func (sql *SQL) Add(equations ...string) string {
 	tables := make([]string, 0)
 	for _, table := range sql.tables {
@@ -173,7 +211,6 @@ func (sql *SQL) Add(equations ...string) string {
 	for _, equation := range equations {
 		column := strings.Join(strings.Split(equation, "=")[:1], "")
 		value := strings.Join(strings.Split(equation, "=")[1:], "=")
-		fmt.Println(column)
 		columns = append(columns, column)
 		values = append(values, value)
 	}
