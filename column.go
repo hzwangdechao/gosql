@@ -13,6 +13,11 @@ type Column struct {
 	Type  Type
 }
 
+type OrderColumn struct {
+	Column  Column
+	Reverse bool
+}
+
 func NewColumn(table *Table, name string, alias string, columnType Type) *Column {
 	return &Column{
 		Table: table,

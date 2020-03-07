@@ -14,6 +14,8 @@ type SQL struct {
 	columns    []*Column
 	tables     []*Table
 	conditions []*op.Operator
+	groups     []*Column
+	orders     []*OrderColumn
 }
 
 func NewSQL() *SQL {
@@ -45,6 +47,21 @@ func (sql *SQL) Where(conditions ...*op.Operator) *SQL {
 	return sql
 }
 
+func (sql *SQL) GroupBy(columns ...*Column) *SQL {
+	for _, column := range columns {
+		sql.groups = append(sql.columns, column)
+	}
+	return sql
+}
+
+func (sql *SQL) OrderBy(columns ...*OrderColumn) *SQL {
+	for _, column := range columns {
+		sql.orders = append(sql.orders, column)
+	}
+	return sql
+
+}
+
 // Query return the string of the sql query (for send to server, will add semicolon)
 func (sql *SQL) Query() string {
 	return sql.toString() + ";"
@@ -56,6 +73,8 @@ func (sql *SQL) toString() string {
 		sql.getSelectPart(),
 		sql.getFromPart(),
 		sql.getWherePart(),
+		sql.getGroupPart(),
+		sql.getOrderPart(),
 	}
 
 	strSlice = fp.FilterString(func(s string) bool {
@@ -79,6 +98,36 @@ func (sql *SQL) getSelectPart() string {
 		columns = append(columns, "*")
 	}
 	return fmt.Sprintf("SELECT %s", strings.Join(columns, ", "))
+}
+
+func (sql *SQL) getGroupPart() string {
+	groups := make([]string, 0)
+	for _, group := range sql.groups {
+		groups = append(groups, group.String())
+	}
+	if len(groups) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("GROUP BY %s", strings.Join(groups, ", "))
+
+}
+
+func (sql *SQL) getOrderPart() string {
+	orders := make([]string, 0)
+	for _, order := range sql.orders {
+		orderStr := order.Column.String()
+		if order.Reverse {
+			orderStr = orderStr + " DESC"
+		} else {
+			orderStr = orderStr + " ASC"
+		}
+		orders = append(orders, orderStr)
+	}
+	if len(orders) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("ORDER BY %s", strings.Join(orders, ", "))
+
 }
 
 func (sql *SQL) getFromPart() string {
