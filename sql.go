@@ -136,3 +136,18 @@ func (sql *SQL) Delete(configure ...bool) string {
 		return fmt.Sprintf("DELETE  %s %s", sql.getFromPart(), sql.getWherePart())
 	}
 }
+
+func (sql *SQL) Update(equations ...string) string {
+	tables := make([]string, 0)
+	for _, table := range sql.tables {
+		tables = append(tables, table.String())
+	}
+
+	if sql.getWherePart() != "" {
+		return fmt.Sprintf("UPDATE %s SET %s %s", strings.Join(tables, " "), strings.Join(equations, ","), sql.getWherePart())
+
+	} else {
+		panic("Expression cannot be empty")
+	}
+
+}
