@@ -126,3 +126,13 @@ func (sql *SQL) Add(equations ...string) string {
 	}
 
 }
+
+func (sql *SQL) Delete(configure ...bool) string {
+	// configure 防止因为没有 where 条件导致删除整个数据库
+	// 在没有where条件时需要传入一个true确认是自己想要执行的命令
+	if sql.getWherePart() == "" && len(configure) < 1 {
+		panic("Operation not allowed")
+	} else {
+		return fmt.Sprintf("DELETE  %s %s", sql.getFromPart(), sql.getWherePart())
+	}
+}
