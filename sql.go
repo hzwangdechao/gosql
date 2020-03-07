@@ -99,3 +99,30 @@ func (sql *SQL) getWherePart() string {
 	}
 	return fmt.Sprintf("WHERE %s", strings.Join(conditions, " and "))
 }
+
+func (sql *SQL) Add(equations ...string) string {
+	tables := make([]string, 0)
+	for _, table := range sql.tables {
+		tables = append(tables, table.String())
+	}
+
+	columns := make([]string, 0)
+	values := make([]string, 0)
+
+	for _, equation := range equations {
+		column := strings.Join(strings.Split(equation, "=")[:1], "")
+		value := strings.Join(strings.Split(equation, "=")[1:], "=")
+		fmt.Println(column)
+		columns = append(columns, column)
+		values = append(values, value)
+	}
+	if len(columns) > 0 {
+		strColumn := fmt.Sprintf("`%s`", strings.Join(columns, "` ,`"))
+		strValues := fmt.Sprintf("'%s'", strings.Join(values, "' ,'"))
+		return fmt.Sprintf("INSERT INTO %s(%s) VALUES(%s)", strings.Join(tables, " "), strColumn, strValues)
+
+	} else {
+		panic("Expression cannot be empty")
+	}
+
+}
